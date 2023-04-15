@@ -36,6 +36,7 @@ if __name__ == "__main__":
                         env_params['maximal_pickup_distance'] = single_max_distance_num
 
                         simulator = Simulator(**env_params)
+                        # Comment simulator.reset() below if you need
                         simulator.reset()
                         track_record = []
                         t = time.time()
@@ -52,6 +53,19 @@ if __name__ == "__main__":
                                                'matched_long_request_ratio', 'matched_medium_request_ratio',
                                                'matched_short_request_ratio',
                                                'matched_request_ratio']
+                                # TODO: instant and distant code
+                                column_list = ['total_reward', 'matched_transfer_request_num', 'matched_request_num',
+                                               'transfer_request_num',
+                                               'long_request_num',
+                                               'matched_long_request_num', 'matched_medium_request_num',
+                                               'medium_request_num',
+                                               'matched_short_request_num',
+                                               'short_request_num', 'total_request_num',
+                                               'matched_transfer_request_ratio', 'transfer_long_request_ratio',
+                                               'matched_long_request_ratio', 'matched_medium_request_ratio',
+                                               'matched_short_request_ratio',
+                                               'matched_request_ratio','waiting_time','pickup_time','occupancy_rate','occupancy_rate_no_pickup']
+                                
                                 test_num = 10
                                 test_interval = 20
                                 threshold = 5
@@ -87,20 +101,22 @@ if __name__ == "__main__":
                                     occupancy_rate_no_pickup = 0
                                     pickup_time = 0
                                     waiting_time = 0
+                                    transfer_request_num = 0
+                                    matched_transfer_request_num = 0
                                     for date in TEST_DATE_LIST:
                                         simulator.experiment_date = date
                                         simulator.reset()
                                         start_time = time.time()
                                         for step in range(simulator.finish_run_step):
                                             dispatch_transitions = simulator.rl_step(agent)
-                                            if step % 100 == 0:
-                                                print("At step {}".format(step)) # TODO: delete this test print
                                         end_time = time.time()
 
                                         total_reward += simulator.total_reward
                                         total_request_num += simulator.total_request_num
+                                        transfer_request_num += simulator.transfer_request_num
                                         occupancy_rate += simulator.occupancy_rate
                                         matched_request_num += simulator.matched_requests_num
+                                        # matched_transfer_request_num += simulator.matched_transferred_requests_num
                                         long_request_num += simulator.long_requests_num
                                         medium_request_num += simulator.medium_requests_num
                                         short_request_num += simulator.short_requests_num
@@ -118,6 +134,7 @@ if __name__ == "__main__":
                                     ay.append(total_reward)
                                     print("total reward",total_reward)
                                     total_request_num = total_request_num / len(TEST_DATE_LIST)
+                                    transfer_request_num = transfer_request_num / len(TEST_DATE_LIST)
                                     occupancy_rate = occupancy_rate / len(TEST_DATE_LIST)
                                     matched_request_num = matched_request_num / len(TEST_DATE_LIST)
                                     long_request_num = long_request_num / len(TEST_DATE_LIST)
@@ -138,12 +155,19 @@ if __name__ == "__main__":
                                           long_request_num, matched_long_request_num,
                                          matched_medium_request_num, medium_request_num, matched_short_request_num,
                                          short_request_num, total_request_num,waiting_time,pickup_time,occupancy_rate,occupancy_rate_no_pickup])
+                                    # TODO: instant and distant code
+                                    record_array = np.array(
+                                        [total_reward, matched_transfer_request_num, matched_request_num,
+                                         transfer_request_num, long_request_num, matched_long_request_num,
+                                         matched_medium_request_num, medium_request_num, matched_short_request_num,
+                                         short_request_num, total_request_num,waiting_time,pickup_time,occupancy_rate,occupancy_rate_no_pickup])
+                                    
                                     # record_array = np.array([total_reward])
 
                                     if num == 0:
-                                        df.iloc[0, :13] = record_array
+                                        df.iloc[0, :15] = record_array
                                     else:
-                                        df.iloc[num, :13] = (df.iloc[(num - 1), :13].values * num + record_array) / (
+                                        df.iloc[num, :15] = (df.iloc[(num - 1), :1].values * num + record_array) / (
                                                     num + 1)
 
                                     if num % 10 == 0:  # save the result every 10
@@ -163,7 +187,15 @@ if __name__ == "__main__":
                                 plt.plot(ax,ay)
                                 plt.plot(ax,ay,'r+')
                                 plt.show()
-
+                                df.loc[:num, 'matched_transfer_request_ratio'] = df.loc[:(num),
+                                                                                 'matched_transfer_request_num'].values / df.loc[
+                                                                                                                          :(
+                                                                                                                              num),
+                                                                                                                          'matched_request_num'].values
+                                df.loc[:(num), 'transfer_long_request_ratio'] = df.loc[:(num),
+                                                                                'transfer_request_num'].values / df.loc[
+                                                                                                                 :(num),
+                                                                                                                 'long_request_num'].values
                                 df.loc[:(num), 'matched_long_request_ratio'] = df.loc[:(num),
                                                                                'matched_long_request_num'].values / df.loc[
                                                                                                                     :(num),
