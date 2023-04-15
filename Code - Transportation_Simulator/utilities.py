@@ -595,6 +595,17 @@ def cruising(eligible_driver_table, mode,grid_value ={}):
             if grid_id - side > 0:
                 target.append(grid_id - side)
             random_number = choice(target)
+        elif mode == 'nearby':
+            target = []
+            if int((grid_id - 1) / side) == int(grid_id / side) and grid_id - 1 > 0:
+                target.append(grid_id - 1)
+            if int((grid_id + 1) / side) == int(grid_id / side) and grid_id + 1 < side * side:
+                target.append(grid_id + 1)
+            if grid_id + side < side * side:
+                target.append(grid_id + side)
+            if grid_id - side > 0:
+                target.append(grid_id - side)
+            random_number = choice(target)
         record = result[result['grid_id'] == random_number]
         if len(record) > 0:
             dest_array.append([record.iloc[0]['lng'], record.iloc[0]['lat']])

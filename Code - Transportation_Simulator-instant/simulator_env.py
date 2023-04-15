@@ -397,8 +397,7 @@ class Simulator:
         # statistics
         long_added = new_matched_requests[new_matched_requests['trip_time'] >= 600].shape[0]
         short_added = new_matched_requests[new_matched_requests['trip_time'] <= 300].shape[0]
-        # self.matched_transferred_requests_num += new_matched_requests[new_matched_requests['transfer_flag'] == 1].shape[
-        #     0]
+        # self.matched_transferred_requests_num += new_matched_requests[new_matched_requests['transfer_flag'] == 1].shape[0]
         self.matched_long_requests_num += long_added
         self.matched_short_requests_num += short_added
         self.matched_medium_requests_num += (new_matched_requests.shape[0] - long_added - short_added)
