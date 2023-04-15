@@ -686,7 +686,19 @@ def order_dispatch(wait_requests, driver_table, maximal_pickup_distance=950, dis
 def driver_online_offline_decision(driver_table, current_time):
 
     # 注意pickup和delivery driver不应当下线
+    # 车辆状态：0 cruise (park 或正在cruise)， 1 表示delivery，2 pickup, 3 表示下线, 4 reposition
+    # This function is aimed to switch the driver states between 0 and 3, based on the 'start_time' and 'end_time' of drivers
+    # Notice that we should not change the state of delievery and pickup drivers, since they are occopied. 
+    online_driver_table = driver_table.loc[(driver_table['start_time'] <= current_time) & (driver_table['end_time'] > current_time)]
+    offline_driver_table = driver_table.loc[(driver_table['start_time'] > current_time) | (driver_table['end_time'] <= current_time)]
+    
+    online_driver_table = online_driver_table.loc[(online_driver_table['status'] != 1) | (online_driver_table['status'] != 2)]
+    offline_driver_table = offline_driver_table.loc[(offline_driver_table['status'] != 1) | (offline_driver_table['status'] != 2)]
+    # print(f'online count: {len(online_driver_table)}, offline count: {len(offline_driver_table)}, total count: {len(driver_table)}')
     new_driver_table = driver_table
+    new_driver_table.loc[new_driver_table.isin(online_driver_table.to_dict('list')).all(axis=1), 'status'] = 0
+    new_driver_table.loc[new_driver_table.isin(offline_driver_table.to_dict('list')).all(axis=1), 'status'] = 3
+    # return new_driver_table
     return new_driver_table
 
 

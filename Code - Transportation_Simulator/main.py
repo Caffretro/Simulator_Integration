@@ -43,17 +43,7 @@ if __name__ == "__main__":
 
                         if env_params['rl_mode'] == "matching":
                             if simulator.experiment_mode == 'test':
-                                column_list = ['total_reward', 'matched_request_num',
-                                               'long_request_num',
-                                               'matched_long_request_num', 'matched_medium_request_num',
-                                               'medium_request_num',
-                                               'matched_short_request_num',
-                                               'short_request_num', 'total_request_num',
-                                               'waiting_time','pickup_time','occupancy_rate','occupancy_rate_no_pickup',
-                                               'matched_long_request_ratio', 'matched_medium_request_ratio',
-                                               'matched_short_request_ratio',
-                                               'matched_request_ratio']
-                                # TODO: instant and distant code
+                                
                                 column_list = ['total_reward', 'matched_transfer_request_num', 'matched_request_num',
                                                'transfer_request_num',
                                                'long_request_num',
@@ -150,12 +140,6 @@ if __name__ == "__main__":
                                     print("wait",waiting_time)
                                     print("matching ratio",matched_request_num/total_request_num)
                                     print("ocu",occupancy_rate)
-                                    record_array = np.array(
-                                        [total_reward, matched_request_num,
-                                          long_request_num, matched_long_request_num,
-                                         matched_medium_request_num, medium_request_num, matched_short_request_num,
-                                         short_request_num, total_request_num,waiting_time,pickup_time,occupancy_rate,occupancy_rate_no_pickup])
-                                    # TODO: instant and distant code
                                     record_array = np.array(
                                         [total_reward, matched_transfer_request_num, matched_request_num,
                                          transfer_request_num, long_request_num, matched_long_request_num,
