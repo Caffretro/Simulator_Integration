@@ -139,46 +139,46 @@ if env_params['rl_mode'] == "matching":
             direction4_available_list.append(i+1)
 elif env_params['rl_mode'] == "reposition":
     for i in range(side**2):
-    if len(result[result['grid_id']==i]['lng'].values.tolist()) == 0:
-        centroid_lng_list.append(lng_list[0])
-        centroid_lat_list.append(lat_list[0])
-    else:
-        centroid_lng_list.append(result[result['grid_id']==i]['lng'].values.tolist()[0])
-        centroid_lat_list.append(result[result['grid_id']==i]['lat'].values.tolist()[0])
-    # up
-    if math.floor(i / side) == 0 and len(result[result['grid_id']==i-side]['lng'].values.tolist()) == 0:
-        direction_1_list.append(0)
-        direction1_available_list.append(i)
-    else:
-        direction_1_list.append(1)
-        direction1_available_list.append(i-side)
+        if len(result[result['grid_id']==i]['lng'].values.tolist()) == 0:
+            centroid_lng_list.append(lng_list[0])
+            centroid_lat_list.append(lat_list[0])
+        else:
+            centroid_lng_list.append(result[result['grid_id']==i]['lng'].values.tolist()[0])
+            centroid_lat_list.append(result[result['grid_id']==i]['lat'].values.tolist()[0])
+        # up
+        if math.floor(i / side) == 0 and len(result[result['grid_id']==i-side]['lng'].values.tolist()) == 0:
+            direction_1_list.append(0)
+            direction1_available_list.append(i)
+        else:
+            direction_1_list.append(1)
+            direction1_available_list.append(i-side)
 
 
-    # down
-    if math.floor(i / side) == side - 1 and len(result[result['grid_id']==i+side]['lng'].values.tolist()) == 0:
-        direction_2_list.append(0)
-        direction2_available_list.append(i)
-    else:
-        direction_2_list.append(1)
-        direction2_available_list.append(i + side)
+        # down
+        if math.floor(i / side) == side - 1 and len(result[result['grid_id']==i+side]['lng'].values.tolist()) == 0:
+            direction_2_list.append(0)
+            direction2_available_list.append(i)
+        else:
+            direction_2_list.append(1)
+            direction2_available_list.append(i + side)
 
 
 
-    # left
-    if i % side == 0 and len(result[result['grid_id']==i-1]['lng'].values.tolist()) == 0:
-        direction_3_list.append(0)
-        direction3_available_list.append(i)
-    else:
-        direction_3_list.append(1)
-        direction3_available_list.append(i-1)
+        # left
+        if i % side == 0 and len(result[result['grid_id']==i-1]['lng'].values.tolist()) == 0:
+            direction_3_list.append(0)
+            direction3_available_list.append(i)
+        else:
+            direction_3_list.append(1)
+            direction3_available_list.append(i-1)
 
-    # right
-    if i % side == side -1 and len(result[result['grid_id']==i+1]['lng'].values.tolist()) == 0:
-        direction_4_list.append(0)
-        direction4_available_list.append(i)
-    else:
-        direction_4_list.append(1)
-        direction4_available_list.append(i+1)
+        # right
+        if i % side == side -1 and len(result[result['grid_id']==i+1]['lng'].values.tolist()) == 0:
+            direction_4_list.append(0)
+            direction4_available_list.append(i)
+        else:
+            direction_4_list.append(1)
+            direction4_available_list.append(i+1)
 
 df_available_directions['zone_id'] = [i for i in range(side**2)]
 df_available_directions['direction_0'] = 1
