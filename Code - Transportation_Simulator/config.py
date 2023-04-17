@@ -44,6 +44,7 @@ env_params = {
 'rl_mode': 'matching',  # reposition and matching
 'method': 'instant_reward_no_subway',  #  'sarsa_no_subway' / 'pickup_distance' / 'instant_reward_no_subway'   #  rl for matching
 'reposition_method': 'random_cruise',  # A2C, A2C_global_aware, random_cruise, stay  # rl for repositioning
+'dayparting': True, # if true, simulator_env will compute information based on time periods in a day, e.g. 'morning', 'afternoon'
 }
 wait_time_params_dict = {'morning': [2.582, 2.491, 0.026, 1.808, 2.581],
                     'evening': [4.862, 2.485, 0, 1.379, 13.456],

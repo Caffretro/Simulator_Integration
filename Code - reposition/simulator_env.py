@@ -389,9 +389,6 @@ class Simulator:
         long_added = new_matched_requests[new_matched_requests['trip_time'] >= 600].shape[0]
         short_added = new_matched_requests[new_matched_requests['trip_time'] <= 300].shape[0]
         self.matched_long_requests_num += long_added
-        # print("short matched")
-        # print(new_matched_requests[new_matched_requests['trip_time'] <= 300])
-        # print("********"*10)
         self.matched_short_requests_num += short_added
         self.matched_medium_requests_num += (new_matched_requests.shape[0] - long_added - short_added)
         return new_matched_requests, update_wait_requests
@@ -493,134 +490,133 @@ class Simulator:
         return
 
     def step_bootstrap_new_orders(self, score_agent={}, epsilon=0): #  rl for matching
-            """
-            This function used to generate initial order by different time
-            :return:
-            """
-            # TJ
-            if self.order_generation_mode == 'sample_from_base':
-                # directly sample orders from the historical order database
-                sampled_requests = []
-                temp_request = []
-                # TJ 当更换为按照日期训练时 进行调整
-                min_time = max(env_params['t_initial'], self.time - self.request_interval)
-                for time in range(min_time, self.time):
-                    if time in self.request_databases.keys():
-                        temp_request.extend(self.request_databases[time])
-                # temp_request = self.request_databases
-            # TJ
-                # if self.time in self.request_databases.keys():
-                #     temp_request = self.request_databases[self.time]
-                if temp_request == []:
-                    
-                    return
-                database_size = len(temp_request)
-                # sample a portion of historical orders
-                num_request = int(np.rint(self.order_sample_ratio * database_size))
-                if num_request <= database_size:
-                    sampled_request_index = np.random.choice(database_size, num_request, replace=False).tolist()
-                    sampled_requests = [temp_request[index] for index in sampled_request_index]
+        """
+        This function used to generate initial order by different time
+        :return:
+        """
+        # TJ
+        if self.order_generation_mode == 'sample_from_base':
+            # directly sample orders from the historical order database
+            sampled_requests = []
+            temp_request = []
+            # TJ 当更换为按照日期训练时 进行调整
+            min_time = max(env_params['t_initial'], self.time - self.request_interval)
+            for time in range(min_time, self.time):
+                if time in self.request_databases.keys():
+                    temp_request.extend(self.request_databases[time])
+            # temp_request = self.request_databases
+        # TJ
+            # if self.time in self.request_databases.keys():
+            #     temp_request = self.request_databases[self.time]
+            if temp_request == []:
+                return
+            database_size = len(temp_request)
+            # sample a portion of historical orders
+            num_request = int(np.rint(self.order_sample_ratio * database_size))
+            if num_request <= database_size:
+                sampled_request_index = np.random.choice(database_size, num_request, replace=False).tolist()
+                sampled_requests = [temp_request[index] for index in sampled_request_index]
 
-                # TJ
-                # generate complete information for new orders
-                # weight_array = np.ones(len(self.request_database))  # rl for matching
-                weight_array = np.ones(len(sampled_requests))  # rl for matching
-                column_name = ['order_id', 'origin_id', 'origin_lat', 'origin_lng', 'dest_id', 'dest_lat', 'dest_lng',
-                    'trip_distance', 'start_time', 'origin_grid_id', 'dest_grid_id', 'itinerary_node_list',
-                    'itinerary_segment_dis_list', 'trip_time', 'designed_reward', 'cancel_prob']
-                if len(sampled_requests) > 0:
-                    itinerary_segment_dis_list = []
-                    itinerary_node_list = np.array(sampled_requests)[:, 11]
-                    trip_distance = []
-                    # trip_distance = npSS.array(sampled_requests)[:, 7]
-                    for k, itinerary_node in enumerate(itinerary_node_list):
-                        try:
-                            itinerary_segment_dis = []
-                            # route generation
-                            if env_params['delivery_mode'] == 'rg':
-                                for i in range(len(itinerary_node) - 1):
-                                    dis = distance(node_id_to_lat_lng[itinerary_node[i]], node_id_to_lat_lng[itinerary_node[i + 1]])
-                                    itinerary_segment_dis.append(dis)
-                            # start - end manhadun distance
-                            elif env_params['delivery_mode'] == 'ma':
-                                dis = distance(node_id_to_lat_lng[itinerary_node[0]], node_id_to_lat_lng[itinerary_node[-1]])
-                                itinerary_node_list[k] = [itinerary_node[0],itinerary_node[-1]]
+            # TJ
+            # generate complete information for new orders
+            # weight_array = np.ones(len(self.request_database))  # rl for matching
+            weight_array = np.ones(len(sampled_requests))  # rl for matching
+            column_name = ['order_id', 'origin_id', 'origin_lat', 'origin_lng', 'dest_id', 'dest_lat', 'dest_lng',
+                'trip_distance', 'start_time', 'origin_grid_id', 'dest_grid_id', 'itinerary_node_list',
+                'itinerary_segment_dis_list', 'trip_time', 'designed_reward', 'cancel_prob']
+            if len(sampled_requests) > 0:
+                itinerary_segment_dis_list = []
+                itinerary_node_list = np.array(sampled_requests)[:, 11]
+                trip_distance = []
+                # trip_distance = npSS.array(sampled_requests)[:, 7]
+                for k, itinerary_node in enumerate(itinerary_node_list):
+                    try:
+                        itinerary_segment_dis = []
+                        # route generation
+                        if env_params['delivery_mode'] == 'rg':
+                            for i in range(len(itinerary_node) - 1):
+                                dis = distance(node_id_to_lat_lng[itinerary_node[i]], node_id_to_lat_lng[itinerary_node[i + 1]])
                                 itinerary_segment_dis.append(dis)
-                            itinerary_segment_dis_list.append(itinerary_segment_dis)
-                            trip_distance.append(sum(itinerary_segment_dis))
-                        except Exception as e:
-                            print(e)
-                            print(itinerary_node)
+                        # start - end manhadun distance
+                        elif env_params['delivery_mode'] == 'ma':
+                            dis = distance(node_id_to_lat_lng[itinerary_node[0]], node_id_to_lat_lng[itinerary_node[-1]])
+                            itinerary_node_list[k] = [itinerary_node[0],itinerary_node[-1]]
+                            itinerary_segment_dis.append(dis)
+                        itinerary_segment_dis_list.append(itinerary_segment_dis)
+                        trip_distance.append(sum(itinerary_segment_dis))
+                    except Exception as e:
+                        print(e)
+                        print(itinerary_node)
 
-                    wait_info = pd.DataFrame(sampled_requests, columns=column_name)
-                    wait_info['itinerary_node_list'] = itinerary_node_list
-                    wait_info['start_time'] = self.time
-                    wait_info['trip_distance'] = trip_distance
-                    wait_info['trip_time'] = wait_info['trip_distance'] / self.vehicle_speed * 3600
-                    wait_info['itinerary_segment_dis_list'] = itinerary_segment_dis_list
-                    reward_list = []
-                    for dis in trip_distance:
-                        reward_list.append(2.5 + 0.5 * int(max(0,dis*1000-322)/322))
-                    wait_info['designed_reward'] = reward_list
-                    weight_array = wait_info['designed_reward'].values
-                # transfer_flag_array = np.zeros(len(self.request_database))
-                    if self.rl_mode == 'matching':
+                wait_info = pd.DataFrame(sampled_requests, columns=column_name)
+                wait_info['itinerary_node_list'] = itinerary_node_list
+                wait_info['start_time'] = self.time
+                wait_info['trip_distance'] = trip_distance
+                wait_info['trip_time'] = wait_info['trip_distance'] / self.vehicle_speed * 3600
+                wait_info['itinerary_segment_dis_list'] = itinerary_segment_dis_list
+                reward_list = []
+                for dis in trip_distance:
+                    reward_list.append(2.5 + 0.5 * int(max(0,dis*1000-322)/322))
+                wait_info['designed_reward'] = reward_list
+                weight_array = wait_info['designed_reward'].values
+            # transfer_flag_array = np.zeros(len(self.request_database))
+                if self.rl_mode == 'matching':
 
-                        #  rl for matching
-                        if self.method == 'instant_reward_no_subway':
-                            pass  # deseigned_reward
-                        elif self.method == 'pickup_distance':
-                            pass
-                        #  rl for matching
-                        elif self.method in ['sarsa', 'sarsa_no_subway']:  # rl for matching
+                    #  rl for matching
+                    if self.method == 'instant_reward_no_subway':
+                        pass  # deseigned_reward
+                    elif self.method == 'pickup_distance':
+                        pass
+                    #  rl for matching
+                    elif self.method in ['sarsa', 'sarsa_no_subway']:  # rl for matching
 
-                            # weight array should be updated here
-                            # currently without trim
-                            current_time_slice = int((self.time - self.t_initial - 1) / LEN_TIME_SLICE)  # rl for matching
-                            num_slices = int(LEN_TIME / LEN_TIME_SLICE)  # rl for matching
-                            # different frequency of transit r1
+                        # weight array should be updated here
+                        # currently without trim
+                        current_time_slice = int((self.time - self.t_initial - 1) / LEN_TIME_SLICE)  # rl for matching
+                        num_slices = int(LEN_TIME / LEN_TIME_SLICE)  # rl for matching
+                        # different frequency of transit r1
+        
+                        for i,(travel_time, reward,dest_grid_id) in enumerate(zip(wait_info['trip_time'].values.tolist(),wait_info['designed_reward'].values.tolist(),wait_info['dest_grid_id'].values.tolist())):  # rl for matching
+                            # rl for matching
+                            # score original trip
+                            end_time_slice = int((self.time + 0.5*self.maximal_pickup_distance/self.vehicle_speed*3600 + travel_time - self.t_initial - 1) / LEN_TIME_SLICE)
+                            if end_time_slice >= num_slices:
+                                original_trip_score = reward
+                            else:
+                                next_state = State(end_time_slice, int(dest_grid_id))
+                                original_trip_score = reward + (
+                                        sarsa_params['discount_rate'] ** (end_time_slice - current_time_slice)) \
+                                                    * score_agent.q_value_table[next_state]
+                            weight_array[i] = original_trip_score
+                            self.transfer_request_num += 1
+                            # rl for matching
+
+                wait_info['wait_time'] = 0
+                wait_info['status'] = 0
+                wait_info['maximum_wait_time'] = self.maximum_wait_time_mean
+                wait_info['weight'] = weight_array # rl for matching
+                # add extra info of orders
+                # 添加分布  价格高的删除
+                wait_info['maximum_price_passenger_can_tolerate'] = np.random.normal(
+                    env_params['maximum_price_passenger_can_tolerate_mean'],
+                    env_params['maximum_price_passenger_can_tolerate_std'],
+                    len(wait_info))
+                wait_info = wait_info[
+                    wait_info['maximum_price_passenger_can_tolerate'] >= wait_info['trip_distance'] * env_params[
+                        'price_per_km']]
+                wait_info['maximum_pickup_time_passenger_can_tolerate'] = np.random.normal(
+                    env_params['maximum_pickup_time_passenger_can_tolerate_mean'],
+                    env_params['maximum_pickup_time_passenger_can_tolerate_std'],
+                    len(wait_info))
+
+                self.wait_requests = pd.concat([self.wait_requests, wait_info], ignore_index=True)
             
-                            for i,(travel_time, reward,dest_grid_id) in enumerate(zip(wait_info['trip_time'].values.tolist(),wait_info['designed_reward'].values.tolist(),wait_info['dest_grid_id'].values.tolist())):  # rl for matching
-                                # rl for matching
-                                # score original trip
-                                end_time_slice = int((self.time + 0.5*self.maximal_pickup_distance/self.vehicle_speed*3600 + travel_time - self.t_initial - 1) / LEN_TIME_SLICE)
-                                if end_time_slice >= num_slices:
-                                    original_trip_score = reward
-                                else:
-                                    next_state = State(end_time_slice, int(dest_grid_id))
-                                    original_trip_score = reward + (
-                                            sarsa_params['discount_rate'] ** (end_time_slice - current_time_slice)) \
-                                                        * score_agent.q_value_table[next_state]
-                                weight_array[i] = original_trip_score
-                                self.transfer_request_num += 1
-                                # rl for matching
-
-                    wait_info['wait_time'] = 0
-                    wait_info['status'] = 0
-                    wait_info['maximum_wait_time'] = self.maximum_wait_time_mean
-                    wait_info['weight'] = weight_array # rl for matching
-                    # add extra info of orders
-                    # 添加分布  价格高的删除
-                    wait_info['maximum_price_passenger_can_tolerate'] = np.random.normal(
-                        env_params['maximum_price_passenger_can_tolerate_mean'],
-                        env_params['maximum_price_passenger_can_tolerate_std'],
-                        len(wait_info))
-                    wait_info = wait_info[
-                        wait_info['maximum_price_passenger_can_tolerate'] >= wait_info['trip_distance'] * env_params[
-                            'price_per_km']]
-                    wait_info['maximum_pickup_time_passenger_can_tolerate'] = np.random.normal(
-                        env_params['maximum_pickup_time_passenger_can_tolerate_mean'],
-                        env_params['maximum_pickup_time_passenger_can_tolerate_std'],
-                        len(wait_info))
-
-                    self.wait_requests = pd.concat([self.wait_requests, wait_info], ignore_index=True)
-                
-                    # statistics
-                    self.total_request_num += wait_info.shape[0]
-                    self.long_requests_num += wait_info[wait_info['trip_time'] >= 600].shape[0]
-                    self.short_requests_num += wait_info[wait_info['trip_time'] <= 300].shape[0]
-                    self.medium_requests_num = self.total_request_num - self.long_requests_num - self.short_requests_num
-            return
+                # statistics
+                self.total_request_num += wait_info.shape[0]
+                self.long_requests_num += wait_info[wait_info['trip_time'] >= 600].shape[0]
+                self.short_requests_num += wait_info[wait_info['trip_time'] <= 300].shape[0]
+                self.medium_requests_num = self.total_request_num - self.long_requests_num - self.short_requests_num
+        return
 
 
     def cruise_and_reposition(self):
