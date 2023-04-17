@@ -18,7 +18,7 @@ if __name__ == "__main__":
     driver_num = [100]
     max_distance_num = [1]
 
-    cruise_flag = [True]
+    cruise_flag = [True if env_params['rl_mode'] == 'matching' else False]
     pickup_flag = ['rg']
     delivery_flag = ['rg']
 
@@ -37,7 +37,7 @@ if __name__ == "__main__":
                         env_params['maximal_pickup_distance'] = single_max_distance_num
 
                         simulator = Simulator(**env_params)
-                        # Comment simulator.reset() below if you need
+                        # Comment simulator.reset() below if you are not running matching with instant_reward_no_subway
                         simulator.reset()
                         track_record = []
                         t = time.time()
