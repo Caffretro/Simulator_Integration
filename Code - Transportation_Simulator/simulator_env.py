@@ -78,7 +78,6 @@ class Simulator:
         self.finish_run_step = int((self.t_end - self.t_initial) // self.delta_t)
 
         # request tables
-        # TODO: added 'designed_reward, check whether right'
         self.request_columns = ['order_id', 'origin_id', 'origin_lat', 'origin_lng', 'dest_id', 'dest_lat', 'dest_lng',
                                 'trip_distance', 'start_time', 'origin_grid_id','dest_grid_id', 'itinerary_node_list',
                                 'itinerary_segment_dis_list', 'trip_time', 'cancel_prob', 't_matched',
@@ -168,7 +167,6 @@ class Simulator:
         column_name = ['order_id', 'origin_id', 'origin_lat', 'origin_lng', 'dest_id', 'dest_lat', 'dest_lng',
                        'trip_distance', 'start_time', 'origin_grid_id', 'dest_grid_id', 'itinerary_node_list',
                        'itinerary_segment_dis_list', 'trip_time', 'designed_reward', 'cancel_prob']
-        # TODO: was in the if below, check whether right
         self.end_of_episode = 0  # rl for matching
         if self.rl_mode == 'matching':
             self.dispatch_transitions_buffer = [np.array([]).reshape([0, 2]), np.array([]), np.array([]).reshape([0, 2]),
@@ -231,7 +229,6 @@ class Simulator:
         :param matched_itinerary: including driver pick up route info
         :return: matched requests and wait requests
         """
-        # TODO: I optimized reposition code 
         if self.rl_mode == 'reposition' and len(self.wait_requests) > 0:
             # record number of idle drivers
             # rl for repositioning
@@ -431,7 +428,6 @@ class Simulator:
             sampled_requests = []
             temp_request = []
             # TJ  当更换训练为日期时 取消以下的注释
-            # TODO: switch temp_request initialization code based on your input format
             # E.g. matching code runs on date_based data, reposition code on the contrary
             min_time = max(env_params['t_initial'], self.time - self.request_interval)
             for time in range(min_time, self.time):
@@ -500,7 +496,6 @@ class Simulator:
                 # wait_info['maximum_wait_time'] = np.random.normal(self.maximum_wait_time_mean,
                 #
                 #                                                    self.maximum_wait_time_std, len(wait_info))
-                # TODO: implement dayparting code below in bootstrap
                 if self.dayparting == True:
                     if self.time >= 25200 and self.time <=32400:
                         params = time_params_dict['morning']
@@ -1337,7 +1332,7 @@ class Simulator:
         action_array = action_array.astype(int)  # rl for repositioning
         self.update_repositioning_driver_status(action_array)  # rl for repositioning
         if self.rl_mode == 'matching' and self.method == 'instant_reward_no_subway':
-            self.cruise_and_reposition() # TODO: ask for step2 behavior
+            self.cruise_and_reposition()
         # Step 6: update next state and time
         self.update_state()
         self.update_time()
