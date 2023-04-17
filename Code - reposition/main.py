@@ -594,7 +594,3 @@ if __name__ == "__main__":
                                 pickle.dump(df, open(load_path + 'performance_record_test_' + env_params[
                                     'reposition_method'] + '.pickle', 'wb'))
                                 print(df.iloc[num, :])
-
-
-
-

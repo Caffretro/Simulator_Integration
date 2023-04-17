@@ -131,7 +131,7 @@ class Simulator:
             self.action_array = np.array([])
             self.next_state_grid_array = np.array([])
             self.next_state_time_array = np.array([])
-            if self.reposition_method == 'A2C_global_aware' | 'A2C':
+            if self.reposition_method == 'A2C_global_aware' or self.reposition_method == 'A2C':
                 self.global_time = []
                 self.global_drivers_num = []
                 self.global_orders_num = []
@@ -777,7 +777,7 @@ class Simulator:
 
         # reposition decision
         # total_idle_time 为reposition间的间隔， time to last both-rg-cruising 为cruising间的间隔。
-        if self.reposition_flag & self.rl_mode == 'matching':
+        if self.reposition_flag and self.rl_mode == 'matching':
             con_eligibe = (self.driver_table['total_idle_time'] > self.eligible_time_for_reposition) & \
                           (self.driver_table['status'] == 0)
             eligible_driver_table = self.driver_table[con_eligibe]
@@ -903,7 +903,7 @@ class Simulator:
 
         idle_drivers_by_grid = 0
         waiting_orders_by_grid = 0
-        if self.reposition_method == 'A2C' | self.reposition_method == 'A2C_global_aware':
+        if self.reposition_method == 'A2C' or self.reposition_method == 'A2C_global_aware':
             # record average idle vehicles and waiting requests in each grid
             # grid_id_idle_drivers = self.driver_table.loc[
             #                con_idle | (self.driver_table['status'] == 2), 'grid_id'].values
@@ -1256,6 +1256,7 @@ class Simulator:
         # TJ
         if len(df_new_matched_requests) != 0:
             self.total_reward += np.sum(df_new_matched_requests['designed_reward'].values)
+            # print("added reward in rl step, reward is {}".format(self.total_reward))
         else:
             self.total_reward += 0
         # TJ
